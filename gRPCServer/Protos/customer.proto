@@ -1,0 +1,46 @@
+﻿syntax = "proto3";
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+option csharp_namespace = "gRPC";
+
+
+package customer;
+
+service Customer {
+    // Sends a greeting
+    rpc GetCustomer (CustomerRequest) returns (CustomerResponse);
+}
+
+message CustomerRequest {
+    int32 id = 1;
+}
+
+message CustomerResponse{
+ repeated CustomerModel customerdetails = 1;
+}
+
+// The response message containing the Customer details.
+//reversed is for  backward-compatibility 
+message CustomerModel {
+    reserved 7 ,8 ,9;
+    int32 id = 1;
+    string name = 2;
+    bool active = 3;
+    google.protobuf.Timestamp dob = 4;
+    google.protobuf.Duration age =5;
+    string customercodeuid =6;
+    AccountStatus accountstatus = 10;
+    google.protobuf.StringValue address = 11;
+}
+
+enum AccountStatus {
+    UNKNOWN = 0;
+    PENDING = 1;
+    ACTIVE = 2;
+    SUSPENDED = 3;
+    CLOSED = 4;
+}
+ 
