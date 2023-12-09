@@ -1,6 +1,8 @@
 ﻿// Copyright 2023-2023 NXGN Management, LLC. All Rights Reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
@@ -56,6 +58,59 @@ namespace gRPC.Services
             };
             return Task.FromResult(response); 
         }
+        
+        //Server streaming
+        public  override async Task GetCustomerStream(CustomerRequest request, IServerStreamWriter<CustomerResponse> responseStream, ServerCallContext context)
+        {
+            // Assume fetching customer details from a database
+            var customerDetails = new List<CustomerModel>
+            {
+                new CustomerModel
+                {
+                    Id = 1, Name = "John Doe",
+                    Active = true, 
+                    Dob = Timestamp.FromDateTime(DateTime.UtcNow), 
+                    Age = Duration.FromTimeSpan(TimeSpan.FromDays(3650)), 
+                    Customercodeuid = Guid.NewGuid().ToString(),
+                    Accountstatus = AccountStatus.Active, 
+                    Address =  "123 Main St"
+                },
+                new CustomerModel
+                {
+                Id = 2, Name = "John Doe2",
+                Active = true, 
+                Dob = Timestamp.FromDateTime(DateTime.UtcNow), 
+                Age = Duration.FromTimeSpan(TimeSpan.FromDays(3650)), 
+                Customercodeuid = Guid.NewGuid().ToString(),
+                Accountstatus = AccountStatus.Active, 
+                Address =  "123 Main St2"
+            }
+            };
+
+            foreach (var customer in customerDetails)
+            {
+                await responseStream.WriteAsync(new CustomerResponse { Customerdetails = { customer } });
+                Thread.Sleep(5000);
+            }
+        }
+        
+        /*public override async Task GetMuitiCustomerStream(IAsyncStreamReader<CustomerRequest> requestStream, ServerCallContext context)
+        {
+            var customerDetails = new List<CustomerModel>();
+
+            await foreach (var request in requestStream.ReadAllAsync())
+            {
+                // Process each incoming request
+                // For example, add customer details to the list
+                customerDetails.Add(new CustomerModel { Id = request.Id, Name = "Client Streamed Customer" , Accountstatus = AccountStatus.Active});
+            }
+
+            // Return a response containing the aggregated customer details
+            return new CustomerResponse { Customerdetails = { customerDetails } };
+        }*/
+        
+        
+        
         
         /*
         The gRPC method types are:
