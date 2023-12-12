@@ -13,7 +13,7 @@ service Customer {
     // get customer details 
     rpc GetCustomer (CustomerRequest) returns (CustomerResponse);
     rpc GetCustomerStream (CustomerRequest) returns (stream CustomerResponse);
-    rpc GetMuitiCustomerStream (stream CustomerRequest) returns (stream CustomerResponse);
+    rpc SendCustomerStream (stream CustomerRequest) returns (CustomerResponse);
 }
 
 message CustomerRequest {
@@ -24,9 +24,12 @@ message CustomerResponse{
     repeated CustomerModel customerdetails = 1;
 }
 
-message MuitiCustomerStream {
-    repeated CustomerResponse customer_responses = 1;
+message MultipleCustomerStream {
+     CustomerModel customerdetails = 1;
 }
+
+ 
+
 // The response message containing the Customer details.
 //reserved is for  backward-compatibility 
 message CustomerModel {

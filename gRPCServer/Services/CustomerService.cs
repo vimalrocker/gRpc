@@ -94,24 +94,38 @@ namespace gRPC.Services
             }
         }
         
-        /*public override async Task GetMuitiCustomerStream(IAsyncStreamReader<CustomerRequest> requestStream, ServerCallContext context)
-        {
-            var customerDetails = new List<CustomerModel>();
-
-            await foreach (var request in requestStream.ReadAllAsync())
+        //Client streaming RPC
+        public override async  Task<CustomerResponse> SendCustomerStream(IAsyncStreamReader<CustomerRequest> requestsStream, ServerCallContext context)
+        { 
+            await foreach (var request in requestsStream.ReadAllAsync())
             {
-                // Process each incoming request
-                // For example, add customer details to the list
-                customerDetails.Add(new CustomerModel { Id = request.Id, Name = "Client Streamed Customer" , Accountstatus = AccountStatus.Active});
-            }
+               
+                Console.WriteLine(request.Id);
 
-            // Return a response containing the aggregated customer details
-            return new CustomerResponse { Customerdetails = { customerDetails } };
-        }*/
-        
-        
-        
-        
+            }
+            
+            return new CustomerResponse
+            {
+                Customerdetails = { GetCustomerDetails() }
+            };
+
+        }
+
+        private static CustomerModel  GetCustomerDetails()
+        {
+            var customerDetails = new CustomerModel
+            {
+                Id = 1, Name = "John Doe",
+                Active = true,
+                Dob = Timestamp.FromDateTime(DateTime.UtcNow),
+                Age = Duration.FromTimeSpan(TimeSpan.FromDays(3650)),
+                Customercodeuid = Guid.NewGuid().ToString(),
+                Accountstatus = AccountStatus.Active,
+                Address = "123 Main St"
+            };
+            return  customerDetails;
+        }
+
         /*
         The gRPC method types are:
 https://learn.microsoft.com/en-us/aspnet/core/grpc/client?view=aspnetcore-7.0

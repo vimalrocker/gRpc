@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using gRPC;
 using Grpc.Core;
@@ -34,7 +33,9 @@ namespace gRPCClient
             
             Console.WriteLine("------------");
 
-            await GetCustomerStream();
+            await ServerStreaming();
+
+            await ClientStreaming();
         }
 
 
@@ -50,7 +51,8 @@ namespace gRPCClient
         }
 
 
-        static async Task GetCustomerStream()
+        //Server Streaming 
+        static async Task ServerStreaming()
         {
             Console.WriteLine("Calling the Customer Service -- Server Streaming");
             
@@ -74,6 +76,31 @@ namespace gRPCClient
                 }
             }
             
+            Console.WriteLine("Calling the Customer Service -- Server Streaming Completed");
+        }
+        
+        //Client Streaming 
+        static async Task ClientStreaming()
+        {
+            Console.WriteLine("Calling the Customer Service -- Client Streaming");
+
+            var channel = GrpcChannel.ForAddress(Url);
+            var client = new Customer.CustomerClient(channel);
+
+            var clientStreamingCall = client.SendCustomerStream(new CallOptions());
+            var request = new CustomerRequest { Id = 1 };
+            await clientStreamingCall.RequestStream.WriteAsync(request);
+            
+            request = new CustomerRequest { Id = 2 };
+            await clientStreamingCall.RequestStream.WriteAsync(request);
+            
+            await clientStreamingCall.RequestStream.CompleteAsync();
+
+            
+            var response = await clientStreamingCall.ResponseAsync;
+            Console.WriteLine(response.Customerdetails);
         }
     }
+    
+    
 }
