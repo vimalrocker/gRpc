@@ -14,6 +14,7 @@ service Customer {
     rpc GetCustomer (CustomerRequest) returns (CustomerResponse);
     rpc GetCustomerStream (CustomerRequest) returns (stream CustomerResponse);
     rpc SendCustomerStream (stream CustomerRequest) returns (CustomerResponse);
+    rpc SendAndGetCustomer(stream CustomerRequest) returns (stream CustomerResponse);
 }
 
 message CustomerRequest {

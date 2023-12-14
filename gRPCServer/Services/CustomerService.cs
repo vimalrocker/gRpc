@@ -97,20 +97,40 @@ namespace gRPC.Services
         //Client streaming RPC
         public override async  Task<CustomerResponse> SendCustomerStream(IAsyncStreamReader<CustomerRequest> requestsStream, ServerCallContext context)
         { 
+            var data = GetCustomerDetails();
             await foreach (var request in requestsStream.ReadAllAsync())
             {
-               
+                data.Id = request.Id;
                 Console.WriteLine(request.Id);
-
             }
-            
+           
             return new CustomerResponse
-            {
-                Customerdetails = { GetCustomerDetails() }
+            { 
+                Customerdetails = { data }
             };
-
         }
+        
 
+        /// Bidirectional streaming RPC
+        public override async Task SendAndGetCustomer(IAsyncStreamReader<CustomerRequest> requestStream, IServerStreamWriter<CustomerResponse> responseStream, ServerCallContext context)
+        {
+            var data = GetCustomerDetails();
+            while (await requestStream.MoveNext().ConfigureAwait(false))
+            {
+                data.Id = requestStream.Current.Id;
+                Thread.Sleep(2000);
+                var response = new CustomerResponse
+                {
+                    Customerdetails = { data }
+                };
+
+                await responseStream.WriteAsync(response).ConfigureAwait(false);
+            }
+        }
+        
+        
+        
+        
         private static CustomerModel  GetCustomerDetails()
         {
             var customerDetails = new CustomerModel
@@ -118,21 +138,29 @@ namespace gRPC.Services
                 Id = 1, Name = "John Doe",
                 Active = true,
                 Dob = Timestamp.FromDateTime(DateTime.UtcNow),
-                Age = Duration.FromTimeSpan(TimeSpan.FromDays(3650)),
+                Age = CalculateAgeDuration(DateTime.UtcNow),
                 Customercodeuid = Guid.NewGuid().ToString(),
                 Accountstatus = AccountStatus.Active,
                 Address = "123 Main St"
             };
+            
             return  customerDetails;
         }
+        
+        public static Duration CalculateAgeDuration(DateTime dateOfBirth)
+        {
+            var today = DateTime.Today;
+            var ageSpan = today - dateOfBirth;
+            var ageDuration = new Duration
+            {
+                Seconds = (long)ageSpan.TotalSeconds,
+                Nanos = (int)Math.Round((ageSpan.TotalMilliseconds % 1000) * 1000000)
+            };
 
-        /*
-        The gRPC method types are:
-https://learn.microsoft.com/en-us/aspnet/core/grpc/client?view=aspnetcore-7.0
-            Unary
-            Server streaming
-            Client streaming
-            Bi-directional streaming*/
+            return ageDuration;
+        }
+
+      //https://github.com/fzankl/grpc-sample/blob/master/src/ASP.NET%20Core%20-%20GrpcServer/Services/DefaultFooService.cs
 
     }
 }

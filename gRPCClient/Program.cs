@@ -7,7 +7,7 @@ using Grpc.Net.Client;
 
 namespace gRPCClient
 {
-    class Program
+   public class Program
     {
         private const string Url = "https://localhost:5001/";
         
@@ -26,7 +26,7 @@ namespace gRPCClient
 
             Console.WriteLine("------------");
             
-            Console.WriteLine("Calling the Customer Service in  Unary manner");
+            Console.WriteLine("Calling the Customer Service in  Unary");
             
              var customerReply = await CallCustomerService();  
              Console.WriteLine(customerReply);
@@ -90,9 +90,7 @@ namespace gRPCClient
             var clientStreamingCall = client.SendCustomerStream(new CallOptions());
             var request = new CustomerRequest { Id = 1 };
             await clientStreamingCall.RequestStream.WriteAsync(request);
-            
-            request = new CustomerRequest { Id = 2 };
-            await clientStreamingCall.RequestStream.WriteAsync(request);
+  
             
             await clientStreamingCall.RequestStream.CompleteAsync();
 
